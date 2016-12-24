@@ -1,8 +1,7 @@
 var util = require('util');
 
 var roleRepairer = {
-
-    structsPerCreep: 8,
+    targetsPerCreep: 8,
 
     findParam: FIND_STRUCTURES,
     targetFilter:(struct) => (struct.structureType == STRUCTURE_ROAD || (struct.owner && struct.owner.username == 'millinon' )) && struct.hits && struct.hits < struct.hitsMax,

@@ -22,6 +22,8 @@ module.exports = {
                         active = false;
                         break;
                 }
+            } else {
+                creep.say('idle');
             }
         }
         

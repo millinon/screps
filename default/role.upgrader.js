@@ -1,8 +1,7 @@
 var util = require('util');
 
 var roleUpgrader = {
-
-    numTotal: 4,
+    targetsPerCreep: 0.5,
 
     findParam: FIND_MY_STRUCTURES,
     targetFilter: (s) => s.structureType == STRUCTURE_CONTROLLER,

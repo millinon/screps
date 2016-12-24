@@ -38,41 +38,19 @@ module.exports.loop = function () {
         var mycreeps = room.find(FIND_MY_CREEPS);
         
         var name = Math.floor(Math.random() * 999);
-
-        var sources = room.find(FIND_SOURCES_ACTIVE);
-        var harvesters = mycreeps.filter((creep) => creep.memory.role == "harvester");
-        if(doSpawn && harvesters.length < roleHarvester.numPerSource * sources.length){
-            spawn.createCreep(body, "h" + name, {"role":"harvester", "carry":false});
-        }
         
+        if(doSpawn){
+            ['harvester', 'energizer', 'upgrader', 'repairer', 'builder'].forEach((value, index, array) => {
+                var role = require('role.' + value);
+                
+                var targets = room.find(role.findParam, {filter: role.targetFilter});
         
-        var sinks = room.find(FIND_STRUCTURES, {filter: (struct) => 
-            util.amOwner(struct) &&
-            (struct.energy == 0 || struct.energy < struct.energyCapacity)
-        });
-        var energizers = mycreeps.filter((creep) => creep.memory.role == "energizer");
-        if(doSpawn && energizers.length < sinks / roleEnergizer.structsPerCreep){
-            spawn.createCreep(body, "e" + name, {"role":"energizer", "carry":false});
-        }
-        
-
-        var upgraders = mycreeps.filter((creep) => creep.memory.role == "upgrader");
-        if(doSpawn && upgraders.length < roleUpgrader.numTotal){
-            spawn.createCreep(body, "u" + name, {"role":"upgrader"});
-        }
-        
-        var sites = room.find(FIND_CONSTRUCTION_SITES, {filter: util.amOwner } );
-        var builders = mycreeps.filter((creep) => creep.memory.role == "builder");
-        if(doSpawn &&  builders.length < sites.length / roleBuilder.sitesPerCreep){
-            spawn.createCreep(body, "b" + name, {"role":"builder", "building":false});
-        }
-        
-        var structs = room.find(FIND_STRUCTURES, {filter: (struct) =>
-            (struct.structureType == STRUCTURE_ROAD || util.amOwner(struct)) && 
-            (struct.hits && struct.hits < struct.hitsMax)});
-        var repairers = mycreeps.filter((creep) => creep.memory.role == "repairer");
-        if(doSpawn && repairers.length < structs.length / roleRepairer.structsPerCreep){
-            spawn.createCreep(body, "r" + name, {"role":"repairer", "repairing":false});
+                var creeps = mycreeps.filter((creep) => creep.memory.role == value);
+                
+                if(creeps.length < (targets.length / role.targetsPerCreep)){
+                    spawn.createCreep(body, value.charAt(0) + name, {'role': value});
+                }
+            });
         }
     }
     

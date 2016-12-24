@@ -1,8 +1,7 @@
 var util = require('util');
 
 var roleBuilder = {
-    
-    sitesPerCreep: 2,
+    targetsPerCreep: 4,
 
     findParam: FIND_MY_CONSTRUCTION_SITES,
     targetFilter: (site) => site.progress < site.progressTotal,
