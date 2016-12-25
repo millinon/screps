@@ -8,7 +8,7 @@ module.exports = {
     
         if(active){
             var target = creep.pos.findClosestByPath(role.findParam, {filter: role.targetFilter});
-            
+   
             if(target){
                 switch(role.action(creep, target)){
                     case OK:
@@ -28,13 +28,7 @@ module.exports = {
         }
         
         if(!active){
-            if(creep.memory.role == 'harvester'){
-                if(util.harvestEnergy(creep)){
-                    active = true;
-                }
-            } else if(util.withdrawEnergy(creep)){
-                active = true;
-            }
+            active = role.gather(creep);
         }
         
         creep.memory.active = active;

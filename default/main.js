@@ -11,47 +11,60 @@ var util = require('util');
 
 module.exports.loop = function () {
 
-    var bodies = [ [WORK, WORK, MOVE, MOVE, CARRY, CARRY], [WORK, MOVE, MOVE, CARRY, CARRY],[WORK, MOVE, CARRY, CARRY],[WORK, MOVE, CARRY] ];
+    var rooms = {};
 
     for(var spawn in Game.spawns){
         
         var spawn = Game.spawns[spawn];
-        var doSpawn = false;
-    
-        var body = null;
-    
-        for(var i = 0; !doSpawn && i < bodies.length; i++){
-            switch(spawn.canCreateCreep(bodies[i])){
-                case OK:
-                    body = bodies[i];
-                    doSpawn = true;
-                    break;
-                case ERR_NOT_ENOUGH_ENERGY:
-                    continue;
-                default:
-                    continue;
-            }
-        }
-        
+        var doSpawn = ! spawn.spawning;
+
         var room = spawn.room;
 
         var mycreeps = room.find(FIND_MY_CREEPS);
         
-        var name = Math.floor(Math.random() * 999);
-        
-        if(doSpawn){
-            ['harvester', 'energizer', 'upgrader', 'repairer', 'builder'].forEach((value, index, array) => {
+            ['harvester', 'energizer', 'upgrader', 'repairer', 'builder', 'scavenger'].forEach((value, index, array) => {
                 var role = require('role.' + value);
                 
                 var targets = room.find(role.findParam, {filter: role.targetFilter});
         
                 var creeps = mycreeps.filter((creep) => creep.memory.role == value);
+
+                if(doSpawn && creeps.length < Math.max(role.minNum, targets.length / role.targetsPerCreep)){
+                    var body = util.chooseBody(spawn, role.bodies);
                 
-                if(creeps.length < (targets.length / role.targetsPerCreep)){
-                    spawn.createCreep(body, value.charAt(0) + name, {'role': value});
+                    var name = value.charAt(0) + Math.floor(Math.random() * 999);
+                    
+                    if(body){
+                        console.log('spawn: ' + spawn.createCreep(body, name, {'role': value}));
+                        doSpawn = false;
+                    }
                 }
             });
+            
+            
+            
+        if(! rooms[room.name]){
+            var towers = room.find(FIND_MY_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_TOWER});
+            
+            for(var index in towers){
+                var tower = towers[index];
+
+                var closestHostile = tower.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+                if(closestHostile) {
+                    tower.attack(closestHostile);
+                }
+                
+                var closestDamagedStructure = tower.pos.findClosestByRange(FIND_STRUCTURES, {
+                    filter: (structure) => structure.hits < (structure.hitsMax / 0.25)
+                });
+                if(closestDamagedStructure) {
+                    tower.repair(closestDamagedStructure);
+                }
+            }
+            
+            rooms[room.name] = true;
         }
+        
     }
     
     
